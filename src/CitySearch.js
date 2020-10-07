@@ -2,18 +2,30 @@ import React, { Component } from 'react';
 import { extractLocations } from './api';
 import { mockData } from './mock-data';
 
+const locations = extractLocations(mockData);
+
 class CitySearch extends Component {
   state = {
-    locations: extractLocations(mockData),
+    locations: this.props.locations,
     query: 'Berlin, Germany',
     suggestions: [],
   };
   handleInputChanged = (event) => {
     const value = event.target.value;
-    this.setState({ query: value });
+    const suggestions = this.props.locations.filter((location) => {
+      return location.toUpperCase().indexOf(value.toUpperCase()) > -1;
+    });
+
+    return this.setState({
+      query: value,
+      suggestions,
+    });
   };
-  handleItemClicked = (value) => {
-    this.setState({ query: value });
+  handleItemClicked = (suggestion) => {
+    this.setState({
+      query: suggestion,
+    });
+    this.props.updateEvents(suggestion);
   };
   render() {
     return (
@@ -26,11 +38,16 @@ class CitySearch extends Component {
         />
         <ul className='suggestions'>
           {this.state.suggestions.map((suggestion) => (
-            <li key={suggestion}>
+            <li
+              key={suggestion}
               onClick={() => this.handleItemClicked(suggestion)}
+            >
               {suggestion}
             </li>
           ))}
+          <li onClick={() => this.handleItemClicked('all')}>
+            <b>See all cities</b>
+          </li>
         </ul>
       </div>
     );
